@@ -18,8 +18,8 @@ class PipelineOptions:
 
     def __init__(self) -> None:
         """Init."""
-        now = datetime.now()
-        self.pipeline_start_time: str = str(now)
+        self.now = datetime.now()
+        self.pipeline_start_time: str = str(self.now)
 
         self.pipeline_id: str = None
         self.pipeline_name: str = None
@@ -41,9 +41,9 @@ class PipelineOptions:
         db = MongoClient(DB_CONNECTION_STRING)[DB_NAME][DB_SNAPSHOT_COLLECTION_NAME]
 
         # Finds last snapshot with same database name as pipeline name
-        last_snapshot_doc = db.findOne(
+        last_snapshot_doc = db.find_one(
             {SnapshotCollectionFields.PIPELINE_NAME: self.pipeline_name},
-            sort={(SnapshotCollectionFields.CREATED_AT, DESCENDING)},
+            sort=[(SnapshotCollectionFields.CREATED_AT, DESCENDING)],
         )
 
         if last_snapshot_doc is None:
@@ -60,12 +60,13 @@ class PipelineOptions:
         self.parameters = parameters
 
         self.pipeline_name = utils.replace_parameters_from_anything(
-            config["pipeline-name"], parameters
+            config["name"], parameters
         )
 
         self.use_snapshots = utils.string_to_bool(
             utils.replace_parameters_from_anything(
-                self.config.get("use-snapshots", False)
+                config.get("use-snapshots", False),
+                parameters
             )
         )
 
@@ -74,8 +75,8 @@ class PipelineOptions:
     def get_config_dict(self) -> Dict[str, Any]:
         """Get config dict."""
         return {
+            "name": self.pipeline_name,
             "pipeline-id": self.pipeline_id,
             "use-snapshot": self.use_snapshots,
-            "pipeline-name": self.pipeline_name,
             "start-time": self.pipeline_start_time,
         }
