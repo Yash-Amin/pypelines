@@ -65,8 +65,7 @@ class PipelineOptions:
 
         self.use_snapshots = utils.string_to_bool(
             utils.replace_parameters_from_anything(
-                config.get("use-snapshots", False),
-                parameters
+                config.get("use-snapshots", False), parameters
             )
         )
 

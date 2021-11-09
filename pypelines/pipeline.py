@@ -36,7 +36,8 @@ class Pipeline:
 
         # Load pipeline options
         config = pipeline_yaml["config"]
-        self.options = PipelineOptions(config, parameters)
+        self.options = PipelineOptions()
+        self.options.load(config, parameters)
 
     def validate(self) -> bool:
         """Validate pipeline."""
