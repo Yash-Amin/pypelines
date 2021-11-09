@@ -16,32 +16,21 @@ from pypelines.config import (
 class PipelineOptions:
     """Class for storing pipeline options."""
 
-    def __init__(
-        self,
-        pipeline_name: str = "",
-        use_snapshots: bool = False,
-        parameters: Dict[str, str] = {},
-    ) -> None:
-        """Init"""
+    def __init__(self) -> None:
+        """Init."""
         now = datetime.now()
         self.pipeline_start_time: str = str(now)
 
-        self.use_snapshots: bool = utils.string_to_bool(
-            utils.replace_parameters_from_anything(use_snapshots, parameters)
-        )
-        self.pipeline_name: str = utils.replace_parameters_from_anything(
-            pipeline_name, parameters
-        )
-
-        self.parameters: Dict[str, str] = parameters
-
         self.pipeline_id: str = None
+        self.pipeline_name: str = None
+        self.use_snapshots: bool = False
+        self.parameters: Dict[str, str] = None
 
         # TODO: make this configurable either from yaml or command-line arguments
         self.continue_from_last_run = True
 
     def get_pipeline_id(self) -> str:
-        """Return pipeline id
+        """Return pipeline id.
 
         If continue-from-last-run is enabled, returns last pipeline id.
         Else returns new pipeline id.
@@ -66,21 +55,21 @@ class PipelineOptions:
 
         return last_snapshot_doc[SnapshotCollectionFields.PIPELINE_ID]
 
-    def load(self):
+    def load(self, config: Dict[str, Any], parameters: Dict[str, Any]) -> None:
         """Load pipeline options."""
-        self.pipeline_id = self.get_pipeline_id()
+        self.parameters = parameters
 
-    def load_from_file(self, file_path: str) -> None:
-        """Load pipeline options from file."""
-        with open(file_path, "r") as f:
-            config: Dict[str, Any] = safe_load.load(f)["config"]
-
-        self.pipeline_name = config["pipeline-name"]
-        self.use_snapshots = utils.string_to_bool(
-            self.config.get("use-snapshots", False)
+        self.pipeline_name = utils.replace_parameters_from_anything(
+            config["pipeline-name"], parameters
         )
 
-        self.load()
+        self.use_snapshots = utils.string_to_bool(
+            utils.replace_parameters_from_anything(
+                self.config.get("use-snapshots", False)
+            )
+        )
+
+        self.pipeline_id = self.get_pipeline_id()
 
     def get_config_dict(self) -> Dict[str, Any]:
         """Get config dict."""
