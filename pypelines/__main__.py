@@ -24,8 +24,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "-continue-from-last-run",
         help="Continue from last run",
-        action="store_true",
-        default=False,
+        type=utils.string_to_bool,
+        default=True,
     )
 
     parser.add_argument("-debug", help="Debug mode", action="store_true", default=False)
