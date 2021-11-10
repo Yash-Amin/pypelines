@@ -2,6 +2,7 @@
 import os
 import argparse
 from typing import List
+from pypelines import utils
 
 from pypelines.pipeline import Pipeline
 
@@ -47,11 +48,14 @@ def main() -> None:
     continue_from_last_run: bool = args.continue_from_last_run
     debug: bool = args.debug
 
+    # Parse parameters
+    parameters = utils.get_parameters_from_string_arguments(raw_parameters)
+
+    # Create pipeline
     pipeline: Pipeline = Pipeline()
 
-    # TODO: parse parameters
     # TODO: use continue_from_last_run and debug flags
-    pipeline.load_from_yaml(pipeline_path, {})
+    pipeline.load_from_yaml(pipeline_path, parameters)
 
 
 if __name__ == "__main__":

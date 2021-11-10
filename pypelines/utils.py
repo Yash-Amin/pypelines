@@ -52,6 +52,9 @@ def replace_parameters_from_dict(
 
 def replace_parameters_from_anything(obj: Any, parameters: Dict[str, Any]) -> Any:
     """Replace parameters from if type of obj is dict,list,str, else returns obj."""
+    if obj is None:
+        return obj
+
     if isinstance(obj, list):
         return replace_parameters_from_list(obj, parameters)
     elif isinstance(obj, dict):
@@ -61,3 +64,14 @@ def replace_parameters_from_anything(obj: Any, parameters: Dict[str, Any]) -> An
 
     # For all other type
     return obj
+
+
+def get_parameters_from_string_arguments(raw_parameters: List[str]) -> Dict[str, Any]:
+    """Get parameters from string arguments."""
+    parameters = {}
+
+    for parameter in raw_parameters:
+        key, value = parameter.split("=", 1)
+        parameters[key] = replace_parameters_from_anything(value, parameters)
+
+    return parameters
