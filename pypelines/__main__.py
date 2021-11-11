@@ -57,6 +57,8 @@ def main() -> None:
     # TODO: use continue_from_last_run and debug flags
     pipeline.load_from_yaml(pipeline_path, parameters)
 
+    pipeline.run()
+
 
 if __name__ == "__main__":
     main()
