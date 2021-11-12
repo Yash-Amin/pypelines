@@ -1,14 +1,11 @@
 """Pipeline"""
-from os import name, pipe
 from yaml import safe_load
 from typing import Dict, Any, List
 from dataclasses import dataclass
 
 from pypelines import utils
-from pypelines.tasks import tasks
-from pypelines.task import PipelineTask
+from pypelines.tasks import run_task
 from pypelines.pipeline_options import PipelineOptions
-from pypelines.utils import replace_parameters_from_anything
 
 
 @dataclass
@@ -100,7 +97,7 @@ class Pipeline:
                 else parameter_values.get(param_name)
             )
 
-            param_value = replace_parameters_from_anything(
+            param_value = utils.replace_parameters_from_anything(
                 _param_raw_value, self.get_parameter_values()
             )
 
@@ -140,22 +137,9 @@ class Pipeline:
         print("Running pipeline")
 
         for task_config in self._pipeline_yaml["tasks"]:
-            task_type = task_config["task"]
-            if task_type not in tasks:
-                raise ValueError("Task of '{}' type was not found.".format(task_type))
-
-            task_name = utils.replace_parameters_from_string(
-                task_config["name"], self.options.parameters
-            )
-
-            task_input_values = task_config.get("inputs", {})
-
-            task: PipelineTask = tasks[task_type](
-                name=task_name,
-                task_input_values=task_input_values,
-                pipeline_parameters=self.options.parameters.copy(),
+            run_task(
+                task_config=task_config,
+                parameters=self.options.parameters,
                 pipeline_options=self.options,
                 extra_parameters={},
             )
-
-            task.run()
