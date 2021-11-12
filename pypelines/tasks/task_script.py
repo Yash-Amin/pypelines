@@ -49,12 +49,14 @@ class ScriptTask(PipelineTask):
         task_input_values: Dict[str, Any],
         pipeline_parameters: Dict[str, Any],
         pipeline_options: PipelineOptions,
+        extra_parameters: Dict[str, Any],
     ) -> None:
         super().__init__(
             name,
             task_input_values,
             pipeline_parameters,
             pipeline_options,
+            extra_parameters,
         )
 
         self.script = ""

@@ -34,15 +34,28 @@ class PipelineTask:
 
     def __init__(
         self,
+        # Name of the task
         name: str,
+        # input values required for given tasks
         task_input_values: Dict[str, Any],
+        # Pipeline Parameters
         pipeline_parameters: Dict[str, Any],
+        # PipelineOptions
         pipeline_options: PipelineOptions,
+        # In _extra_parameters, extra/output parameters are stored
+        # For example, some output parameters from previous parant task can be
+        # passed via _extra_parameters
+        _extra_parameters: Dict[str, Any],
     ) -> None:
         self.name = name
         self.pipeline_options: PipelineOptions = pipeline_options
         self.task_input_values: Dict[str, Any] = task_input_values
-        self.pipeline_parameters: Dict[str, Any] = pipeline_parameters
+        self._pipeline_parameters: Dict[str, Any] = pipeline_parameters
+        self._extra_parameters: Dict[str, Any] = _extra_parameters
+
+        # Parameters, any parameter with same name in the _pipeline_parameters
+        # will be orverriden by _extra_parameters
+        self.parameters = {**self._pipeline_parameters, **self._extra_parameters}
 
     def get_parsed_inputs(self) -> Dict[str, Any]:
         """Return parsed task input values."""
@@ -67,9 +80,7 @@ class PipelineTask:
                 continue
 
             if task_input.allow_parameters:
-                val = utils.replace_parameters_from_anything(
-                    val, self.pipeline_parameters
-                )
+                val = utils.replace_parameters_from_anything(val, self.parameters)
 
             parsed_input_values[task_input.name] = val
 

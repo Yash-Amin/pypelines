@@ -155,6 +155,7 @@ class Pipeline:
                 task_input_values=task_input_values,
                 pipeline_parameters=self.options.parameters.copy(),
                 pipeline_options=self.options,
+                extra_parameters={},
             )
 
             task.run()
