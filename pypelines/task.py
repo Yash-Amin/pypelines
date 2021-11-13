@@ -70,7 +70,9 @@ class PipelineTask:
         # If invalid key is provided, then raise error
         for key in self.task_input_values:
             if key not in unique_input_keys:
-                raise ValueError(f"{key} is not a valid task input")
+                raise ValueError(
+                    f"{key} is not a valid input for task {self.task_type}"
+                )
 
         # Store input values in a dictionary
         parsed_input_values: Dict[str, Any] = {}
