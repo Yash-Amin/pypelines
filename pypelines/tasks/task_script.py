@@ -1,8 +1,21 @@
 """Script Task."""
+import os
+import stat
+import tempfile
+import subprocess
 from typing import Any, Dict, List
 
 from pypelines.pipeline_options import PipelineOptions
 from pypelines.task import PipelineTask, TaskInputSchema
+from pypelines.config import SCRIPTS_DIRECTORY
+
+# Task input keys
+INPUT_IGNORE_SCRIPT_ERRORS = "ignore-script-erros"
+INPUT_SHOW_OUTPUT = "show-output"
+INPUT_SCRIPT = "script"
+INPUT_ARGUMENTS = "arguments"
+INPUT_ENVIRONMENT_VARIABLES = "environment-variables"
+INPUT_USE_SNAPSHOTS = "use-snapshots"
 
 
 class ScriptTask(PipelineTask):
@@ -12,32 +25,32 @@ class ScriptTask(PipelineTask):
 
     task_input_schema: List[TaskInputSchema] = [
         TaskInputSchema(
-            name="ignore-script-erros",
+            name=INPUT_IGNORE_SCRIPT_ERRORS,
             default_value=False,
             description="If true, then pipeline will not fail if script terminates with non-zero exit code",
         ),
         TaskInputSchema(
-            name="show-output",
+            name=INPUT_SHOW_OUTPUT,
             default_value=True,
             description="If true, then script's output will be shown in the terminal",
         ),
         TaskInputSchema(
-            name="script",
+            name=INPUT_SCRIPT,
             description="Script that you want to run.",
             allow_parameters=False,
         ),
         TaskInputSchema(
-            name="arguments",
+            name=INPUT_ARGUMENTS,
             description="List of arguments.",
             default_value=[],
         ),
         TaskInputSchema(
-            name="environment-variables",
+            name=INPUT_ENVIRONMENT_VARIABLES,
             description="Environment variables for script",
             default_value={},
         ),
         TaskInputSchema(
-            name="use-snapshots",
+            name=INPUT_USE_SNAPSHOTS,
             description="Use snapshots",
             default_value=True,
         ),
@@ -62,7 +75,7 @@ class ScriptTask(PipelineTask):
         self.script = ""
         self.show_output = True
         self.use_snapshots = True
-        self.ignore_task_errors = False
+        self.ignore_script_errors = False
         self.arguments = []
         self.script_environment_variables: Dict[str, str] = {}
 
@@ -76,12 +89,12 @@ class ScriptTask(PipelineTask):
 
         task_input_dict = {key: value for key, value in inputs.items()}
 
-        self.script = task_input_dict["script"]
-        self.show_output = task_input_dict["show-output"]
-        self.use_snapshots = task_input_dict["use-snapshots"]
-        self.ignore_task_errors = task_input_dict["ignore-script-erros"]
-        self.arguments = task_input_dict["arguments"]
-        self.script_environment_variables = task_input_dict["environment-variables"]
+        self.script = task_input_dict[INPUT_SCRIPT]
+        self.show_output = task_input_dict[INPUT_SHOW_OUTPUT]
+        self.use_snapshots = task_input_dict[INPUT_USE_SNAPSHOTS]
+        self.ignore_script_errors = task_input_dict[INPUT_IGNORE_SCRIPT_ERRORS]
+        self.arguments = [str(arg) for arg in task_input_dict[INPUT_ARGUMENTS]]
+        self.script_environment_variables = task_input_dict[INPUT_ENVIRONMENT_VARIABLES]
 
         if self.use_snapshots is None:
             # if use_snapshots is not set, then set it to pipeline_options.use_snapshots
@@ -98,8 +111,45 @@ class ScriptTask(PipelineTask):
     ) -> None:
         """Run script task."""
         self.set_task_inputs()
+        # TODO: snapshot check
 
-        # TODO: run script
-        print("Running - ", self.name)
-        print("Script - ", self.script)
-        print("Arguments - ", self.arguments)
+        fd, script_path = tempfile.mkstemp(dir=SCRIPTS_DIRECTORY)
+
+        # Gives RWX permission for the owner
+        os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+
+        # Write script to tmp file
+        with os.fdopen(fd, "w") as tmp_file:
+            tmp_file.write(self.script)
+
+        # Subprocess options
+        subprocess_options = (
+            dict()
+            if self.show_output
+            else dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        )
+
+        # Subprocess environment variables
+        # It will contain OS environment variables, pipeline config and extra parameters
+        subprocess_environment = {
+            **os.environ.copy(),
+            **self.pipeline_options.get_config_dict(),
+            **self._extra_parameters,
+        }
+
+        # Runs the script
+        process = subprocess.run(
+            [script_path] + self.arguments,
+            env={key: str(value) for key, value in subprocess_environment.items()},
+            **subprocess_options
+        )
+
+        # Delete script
+        os.unlink(script_path)
+
+        if not self.ignore_script_errors and process.returncode != 0:
+            raise Exception(
+                "Script terminated with {} exit code".format(process.returncode)
+            )
+
+        # TODO: Save snapshot
