@@ -44,7 +44,7 @@ def main() -> None:
     args = parse_arguments()
 
     pipeline_path: str = args.pipeline_path
-    raw_parameters: List[str] = args.parameters
+    raw_parameters: List[str] = args.parameters or []
     continue_from_last_run: bool = args.continue_from_last_run
     debug: bool = args.debug
 
