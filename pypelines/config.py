@@ -5,7 +5,7 @@ import os
 WORKSPACE_DIRECTORY = os.path.expanduser("~/.Pypelines/")
 
 # Tmp directory to store scripts
-SCRIPTS_DIRECTORY = os.path.join(WORKSPACE_DIRECTORY, "snapshots")
+SCRIPTS_DIRECTORY = os.path.join(WORKSPACE_DIRECTORY, "scripts")
 
 # DB connection string
 DB_CONNECTION_STRING = os.environ.get(
