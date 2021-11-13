@@ -4,6 +4,7 @@ from typing import Any, Dict
 from pypelines import utils
 from pypelines.task import PipelineTask
 from pypelines.tasks.task_script import ScriptTask
+from pypelines.tasks.task_for_each_file import ForEachFileTask
 from pypelines.pipeline_options import PipelineOptions
 
 # Contains all registered tasks
@@ -19,7 +20,7 @@ def _add_task(task: PipelineTask):
 
 
 # Add tasks in the tasks dictionary
-for task in [ScriptTask]:
+for task in [ScriptTask, ForEachFileTask]:
     _add_task(task)
 
 
