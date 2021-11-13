@@ -87,7 +87,7 @@ class ForEachFileTask(PipelineTask):
         self.threads = inputs[INPUT_THREADS]
         self.sub_tasks = inputs[INPUT_SUB_TASKS_CONFIG]
 
-    def run_sub_tasks(self, file_path: str, thread_state: Dict[str, Any]) -> None:
+    def _run_sub_tasks(self, file_path: str, thread_state: Dict[str, Any]) -> None:
         """Run sub-tasks."""
         print(f"Running sub-tasks for {file_path}")
 
@@ -128,7 +128,7 @@ class ForEachFileTask(PipelineTask):
             futures = []
             for file_path in list_files:
                 futures.append(
-                    executor.submit(self.run_sub_tasks, file_path, threads_state)
+                    executor.submit(self._run_sub_tasks, file_path, threads_state)
                 )
 
         if threads_state["error"]:
