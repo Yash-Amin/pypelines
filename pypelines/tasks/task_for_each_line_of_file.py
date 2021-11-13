@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 
 from pypelines.utils import string_to_bool
 from pypelines.pipeline_options import PipelineOptions
+from pypelines.validation import output_parameter_name
 from pypelines.task import PipelineTask, TaskInputSchema
 
 # Task input keys
@@ -39,6 +40,7 @@ class ForEachLineOfFileTask(PipelineTask):
                 "A parameter with given name will be passed to sub-tasks "
                 "and can be accessed using ${{parameters.OUTPUT_PARAMETER_NAME}}"
             ),
+            value_type=output_parameter_name,
         ),
         TaskInputSchema(
             name=INPUT_TRIM_LINES,

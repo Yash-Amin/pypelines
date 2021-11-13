@@ -5,6 +5,7 @@ import concurrent.futures
 from typing import Any, Dict, List
 
 from pypelines.utils import string_to_bool
+from pypelines.validation import output_parameter_name
 from pypelines.pipeline_options import PipelineOptions
 from pypelines.task import PipelineTask, TaskInputSchema
 
@@ -39,13 +40,12 @@ class ForEachFileTask(PipelineTask):
                 "A parameter with given name will be passed to sub-tasks "
                 "and can be accessed using ${{parameters.OUTPUT_PARAMETER_NAME}}"
             ),
+            value_type=output_parameter_name,
         ),
         TaskInputSchema(
             name=INPUT_INCLUDE_SUBDIRECTORIES,
             description=(
-                "Provide name of the output parameter."
-                "A parameter with given name will be passed to sub-tasks "
-                "and can be accessed using ${{parameters.OUTPUT_PARAMETER_NAME}}"
+                "If true, files of subdirectories matching glob pattern will be included."
             ),
             value_type=string_to_bool,
         ),
