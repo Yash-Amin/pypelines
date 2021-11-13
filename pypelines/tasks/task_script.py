@@ -11,7 +11,7 @@ from pypelines.pipeline_options import PipelineOptions
 from pypelines.task import PipelineTask, TaskInputSchema
 
 # Task input keys
-INPUT_IGNORE_SCRIPT_ERRORS = "ignore-script-erros"
+INPUT_IGNORE_SCRIPT_ERRORS = "ignore-script-errors"
 INPUT_SHOW_OUTPUT = "show-output"
 INPUT_SCRIPT = "script"
 INPUT_ARGUMENTS = "arguments"
