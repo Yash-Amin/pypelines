@@ -1,13 +1,14 @@
-"""Script Task."""
+"""Task to run scripts."""
 import os
 import stat
 import tempfile
 import subprocess
 from typing import Any, Dict, List
 
+from pypelines.utils import string_to_bool
+from pypelines.config import SCRIPTS_DIRECTORY
 from pypelines.pipeline_options import PipelineOptions
 from pypelines.task import PipelineTask, TaskInputSchema
-from pypelines.config import SCRIPTS_DIRECTORY
 
 # Task input keys
 INPUT_IGNORE_SCRIPT_ERRORS = "ignore-script-erros"
@@ -26,13 +27,15 @@ class ScriptTask(PipelineTask):
     task_input_schema: List[TaskInputSchema] = [
         TaskInputSchema(
             name=INPUT_IGNORE_SCRIPT_ERRORS,
-            default_value=False,
             description="If true, then pipeline will not fail if script terminates with non-zero exit code",
+            value_type=string_to_bool,
+            default_value=False,
         ),
         TaskInputSchema(
             name=INPUT_SHOW_OUTPUT,
-            default_value=True,
             description="If true, then script's output will be shown in the terminal",
+            value_type=string_to_bool,
+            default_value=True,
         ),
         TaskInputSchema(
             name=INPUT_SCRIPT,
@@ -52,6 +55,7 @@ class ScriptTask(PipelineTask):
         TaskInputSchema(
             name=INPUT_USE_SNAPSHOTS,
             description="Use snapshots",
+            value_type=string_to_bool,
             default_value=True,
         ),
     ]

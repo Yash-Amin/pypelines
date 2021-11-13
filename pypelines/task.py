@@ -1,6 +1,6 @@
 """Abstract class for PipelineTask"""
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from pypelines import utils
 from pypelines.pipeline_options import PipelineOptions
@@ -15,6 +15,12 @@ class TaskInputSchema:
     allow_parameters: bool = True
     allowed_values: List[str] = None
     description: str = None
+    # If you want to type check your inputs, set value_type in your
+    # task_input_schema of the task class.
+    # For example: if you want specific input to be integer only,
+    # use `value_type=int`, if you want input to be boolean only,
+    # use `value_type=string_to_bool`.
+    value_type: Callable = None
     # if required is true and value is None then validation will fail
     # but if required is false it will allow None value
     required: bool = True
@@ -82,6 +88,14 @@ class PipelineTask:
             if task_input.allow_parameters:
                 val = utils.replace_parameters_from_anything(val, self.parameters)
 
+            if task_input.value_type is not None:
+                try:
+                    val = task_input.value_type(val)
+                except:
+                    raise Exception(
+                        f"{task_input.name} is not of type {task_input.value_type}"
+                    )
+
             parsed_input_values[task_input.name] = val
 
         # Validate inputs
@@ -106,6 +120,6 @@ class PipelineTask:
         """
         pass
 
-    def run(self, input_values: Dict[str, Any]) -> None:
+    def run(self) -> None:
         """Run the task."""
         raise NotImplementedError("Task is not implemented")
