@@ -1,0 +1,55 @@
+# Runs script
+#
+# Sample output -
+#   $ pypelines \
+#       -pipeline-path ./examples/1-script.yml
+#       -parameters param1=p1
+#
+#   Running pipeline
+#
+#   Arguments -
+#     param1 = p1
+#     param2 = this is param 2
+#
+#   Environment Variables -
+#     param1 = p1
+#     param2 = this is param 2
+
+parameters:
+  - name: param1
+    description: String parameter 1
+  - name: param2
+    description: String parameter 2
+    default: this is param 2
+
+config:
+  name: Example 1 - Run pipeline with ${{parameters.param1}} and ${{parameters.param2}}
+  use-snapshots: false
+
+tasks:
+  - task: script
+    name: Run script with ${{parameters.param1}} and ${{parameters.param2}}
+    inputs:
+      show-output: true
+      ignore-script-errors: false
+      script: |
+        #!/bin/bash
+        set -e
+
+        p1="$1"
+        p2="$2"
+
+        echo
+        echo "Arguments - "
+        echo "  param1 = $p1"
+        echo "  param2 = $p2"
+        echo
+        echo "Environment Variables - "
+        echo "  param1 = $p1_val"
+        echo "  param2 = $p2_val"
+      arguments:
+        - ${{parameters.param1}}
+        - ${{parameters.param2}}
+      environment-variables:
+        p1_val: ${{parameters.param1}}
+        p2_val: ${{parameters.param2}}

@@ -1,0 +1,44 @@
+# Runs script for each file matching glob-pattern
+#
+# Sample output
+#   $ pypelines \
+#       -pipeline-path ./examples/2-for-each-file.yml \
+#       -parameters 'pattern=./examples/*.yml'
+#
+#   Running pipeline
+#   Running sub-tasks for ./examples/2-for-each-file.yml
+#     >> Current file = ./examples/2-for-each-file.yml
+#   Running sub-tasks for ./examples/1-script.yml
+#     >> Current file = ./examples/1-script.yml
+
+parameters:
+  - name: pattern
+    description: Glob pattern
+
+config:
+  name: Example 2 - Run script for each file matching ${{parameters.pattern}}
+  use-snapshots: false
+
+tasks:
+  - task: for-each-file
+    name: For each file in ${{parameters.pattern}}
+    inputs:
+      threads: 1
+      glob-pattern: ${{parameters.pattern}}
+      output-parameter-name: current_file
+      include-subdirectories: false
+      tasks:
+        - task: script
+          name: Run script with ${{parameters.param1}} and ${{parameters.param2}}
+          inputs:
+            show-output: true
+            ignore-script-errors: false
+            script: |
+              #!/bin/bash
+              set -e
+
+              current_file_path="$1"
+
+              echo "   >> Current file = $current_file_path"
+            arguments:
+              - ${{parameters.current_file}}

@@ -1,0 +1,64 @@
+# Runs script for each line of file
+#
+# Sample output
+#    $ cat ./examples/3-test-file.txt
+#
+#    line 1
+#    line 2
+#
+#    ^^ empty line above
+#      
+#    ^^ line containing only spaces
+#    
+#      trim here    
+#
+#
+#    $ pypelines \
+#         -pipeline-path ./examples/3-for-each-line-of-file.yml \
+#         -parameters input-file-path=./examples/3-test-file.txt
+#
+#    Running pipeline
+#    Running sub-tasks for line 'line 1'
+#      >> Current line = 'line 1'
+#    Running sub-tasks for line 'line 2'
+#      >> Current line = 'line 2'
+#    Running sub-tasks for line '^^ empty line above'
+#      >> Current line = '^^ empty line above'
+#    Running sub-tasks for line '^^ line containing only spaces'
+#      >> Current line = '^^ line containing only spaces'
+#    Running sub-tasks for line 'trim here'
+#      >> Current line = 'trim here'
+
+
+parameters:
+  - name: input-file-path
+    description: File path
+
+config:
+  name: Example 3 - Run script for each line of file '${{parameters.input-file-path}}'
+  use-snapshots: false
+
+tasks:
+  - task: for-each-line-of-file
+    name: For each line of ${{parameters.input-file-path}}
+    inputs:
+      threads: 1
+      file-path: ${{parameters.input-file-path}}
+      output-parameter-name: current_line
+      trim-lines: true
+      skip-empty-lines: true
+      tasks:
+        - task: script
+          name: Run script for line == '${{parameters.input-file-path}}'
+          inputs:
+            show-output: true
+            ignore-script-errors: false
+            script: |
+              #!/bin/bash
+              set -e
+
+              current_line="$1"
+
+              echo "   >> Current line = '$current_line'"
+            arguments:
+              - ${{parameters.current_line}}
