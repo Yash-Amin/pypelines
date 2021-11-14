@@ -139,6 +139,7 @@ class ScriptTask(PipelineTask):
             **os.environ.copy(),
             **self.pipeline_options.get_config_dict(),
             **self._extra_parameters,
+            **self.script_environment_variables,
         }
 
         # Runs the script
