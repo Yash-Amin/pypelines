@@ -24,7 +24,7 @@ class Snapshot:
         """Sets pipeline as completed"""
         get_snapshots_collection().update_one(
             dict(_id=self.pipeline_id),
-            {"$set": dict(is_completed=True)},
+            {"$set": dict(is_completed=True, completed_at=datetime.now())},
         )
 
     def create_if_not_exist(self):
