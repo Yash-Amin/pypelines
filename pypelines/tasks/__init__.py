@@ -48,4 +48,14 @@ def run_task(
         extra_parameters=extra_parameters.copy(),
     )
 
+    task_hash = task.get_task_hash()
+
+    # If task is completed, skip it
+    if pipeline_options.snapshot.is_task_completed(task_hash):
+        print(task_name, "is already completed.")
+        return
+
     task.run()
+
+    # Save task hash to snapshot
+    pipeline_options.snapshot.set_task_completed(task_hash)

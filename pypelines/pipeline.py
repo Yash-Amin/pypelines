@@ -1,7 +1,7 @@
 """Pipeline"""
 from yaml import safe_load
-from typing import Dict, Any, List
 from dataclasses import dataclass
+from typing import Dict, Any, List
 
 from pypelines import utils
 from pypelines.tasks import run_task
@@ -143,3 +143,8 @@ class Pipeline:
                 pipeline_options=self.options,
                 extra_parameters={},
             )
+
+        # TODO: When some tasks have error, don't mark pipeline as completed
+
+        self.options.snapshot.set_pipeline_completed()
+        print("Pipeline completed")

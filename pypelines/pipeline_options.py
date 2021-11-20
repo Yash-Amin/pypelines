@@ -1,15 +1,11 @@
 """Pipeline options."""
 from typing import Any, Dict
 from datetime import datetime
-from pymongo import MongoClient, DESCENDING
+from pymongo import DESCENDING
 
 from pypelines import utils
+from pypelines.snapshot import Snapshot
 from pypelines.constants import SnapshotCollectionFields
-from pypelines.config import (
-    DB_NAME,
-    DB_CONNECTION_STRING,
-    DB_SNAPSHOT_COLLECTION_NAME,
-)
 
 
 class PipelineOptions:
@@ -25,34 +21,45 @@ class PipelineOptions:
         self.use_snapshots: bool = False
         self.parameters: Dict[str, str] = None
 
+        # When pipeline is completed, set this to True
+        self.is_completed: bool = False
+
+        # TODO: see if this should be used or not
+        # Update this to true when any task fails, so at the end when all
+        # tasks are completed, the pipeline is not marked as completed.
+        self.any_task_failed: bool = False
+
         # TODO: make this configurable either from yaml or command-line arguments
         self.continue_from_last_run = True
+
+        self.snapshot: Snapshot = None
 
     def get_pipeline_id(self) -> str:
         """Return pipeline id.
 
         If continue-from-last-run is enabled, returns last pipeline id.
-        Else returns new pipeline id.
+        Else returns current timestamp as new pipeline ID.
         """
+        new_pipeline_id = f"{datetime.timestamp(self.now)} - {self.pipeline_name}"
         if not self.continue_from_last_run:
-            return str(datetime.timestamp(self.now))
+            return new_pipeline_id
 
-        db = MongoClient(DB_CONNECTION_STRING)[DB_NAME][DB_SNAPSHOT_COLLECTION_NAME]
+        db = utils.get_snapshots_collection()
 
         # Finds last snapshot with same database name as pipeline name
         last_snapshot_doc = db.find_one(
-            {SnapshotCollectionFields.PIPELINE_NAME: self.pipeline_name},
-            sort=[(SnapshotCollectionFields.CREATED_AT, DESCENDING)],
+            dict(pipeline_name=self.pipeline_name),
+            sort=[("created_at", DESCENDING)],
         )
 
         if last_snapshot_doc is None:
-            return str(datetime.timestamp(self.now))
+            return new_pipeline_id
 
         # If last pipeline run was completed then return new pipeline id
         if last_snapshot_doc.get(SnapshotCollectionFields.IS_COMPLETED):
-            return str(datetime.timestamp(self.now))
+            return new_pipeline_id
 
-        return last_snapshot_doc[SnapshotCollectionFields.PIPELINE_ID]
+        return last_snapshot_doc["_id"]
 
     def load(self, config: Dict[str, Any], parameters: Dict[str, Any]) -> None:
         """Load pipeline options."""
@@ -70,6 +77,11 @@ class PipelineOptions:
 
         self.pipeline_id = self.get_pipeline_id()
 
+        self.snapshot = Snapshot(self.pipeline_id, self.pipeline_name)
+
+        # Insert new snapshot doc if it does not exist
+        self.snapshot.create_if_not_exist()
+
     def get_config_dict(self) -> Dict[str, Any]:
         """Get config dict."""
         return {
@@ -77,4 +89,5 @@ class PipelineOptions:
             "pipeline-id": self.pipeline_id,
             "use-snapshot": self.use_snapshots,
             "start-time": self.pipeline_start_time,
+            "is-completed": self.is_completed,
         }
