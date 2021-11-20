@@ -63,6 +63,17 @@ class PipelineTask:
         # will be orverriden by _extra_parameters
         self.parameters = {**self._pipeline_parameters, **self._extra_parameters}
 
+    def get_task_hash(self) -> str:
+        """Return task hash.
+
+        Task hash will be used when use-snapshots is true. Tash hash will be
+        stored in the database to avoid re-running the task.
+
+        Override this method to provide custom task hash, for example, if you
+        want to use task inputs as part of the task hash.
+        """
+        return utils.sha256_hash(self.name)
+
     def get_parsed_inputs(self) -> Dict[str, Any]:
         """Return parsed task input values."""
         unique_input_keys = set([x.name for x in self.task_input_schema])
