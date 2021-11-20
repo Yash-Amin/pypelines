@@ -1,0 +1,69 @@
+# Snapshots test pipeline
+#
+# Sample output
+#
+#    $ pypelines -pipeline-path ./examples/4-snapshots.yml
+#      Running pipeline
+#      task 1
+#      ---
+#      task 2
+#      Press Ctrl+Z NOWWW!!!!
+#      ^Z
+#      [5]  + suspended  python3 -m pypelines -pipeline-path ./examples/4-snapshots.yml
+#
+#    $ pypelines -pipeline-path ./examples/4-snapshots.yml
+#      Running pipeline
+#      Script 1 is already completed.
+#      task 2
+#      Press Ctrl+Z NOWWW!!!!
+#      ---
+#      task 3
+#      ---
+#      Pipeline completed
+
+parameters: []
+
+config:
+  name: Example 2 - Run pipeline with ${{parameters.param1}}
+  use-snapshots: true
+
+tasks:
+  - task: script
+    name: Script 1
+    inputs:
+      show-output: true
+      ignore-script-errors: false
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo task 1
+        sleep 3
+        echo ---
+
+  - task: script
+    name: Script 2
+    inputs:
+      show-output: true
+      ignore-script-errors: false
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo task 2
+        echo Hit Ctrl+Z NOWWW!!!!
+        sleep 3
+        echo ---
+
+  - task: script
+    name: Script 3
+    inputs:
+      show-output: true
+      ignore-script-errors: false
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo task 3
+        sleep 3
+        echo ---
