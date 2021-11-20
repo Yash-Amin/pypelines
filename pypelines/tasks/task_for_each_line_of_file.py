@@ -110,7 +110,7 @@ class ForEachLineOfFileTask(PipelineTask):
             try:
                 run_task(
                     task_config=task_config,
-                    parameters=self.parameters,
+                    parameters={**self.parameters, self.output_parameter_name: current_line},
                     pipeline_options=self.pipeline_options,
                     extra_parameters={
                         **self._extra_parameters,
