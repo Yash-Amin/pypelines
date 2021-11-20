@@ -1,4 +1,5 @@
 """Task to run scripts."""
+import re
 import os
 import stat
 import tempfile
@@ -137,7 +138,11 @@ class ScriptTask(PipelineTask):
         # It will contain OS environment variables, pipeline config and extra parameters
         subprocess_environment = {
             **os.environ.copy(),
-            **self.pipeline_options.get_config_dict(),
+            **{
+                # Replaces special chars from key
+                f"pipeline_{re.sub(r'[^a-zA-Z0-9_]', '_', key)}": value
+                for key, value in self.pipeline_options.get_config_dict().items()
+            },
             **self._extra_parameters,
             **self.script_environment_variables,
         }

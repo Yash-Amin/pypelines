@@ -85,8 +85,8 @@ class PipelineOptions:
     def get_config_dict(self) -> Dict[str, Any]:
         """Get config dict."""
         return {
+            "id": self.pipeline_id,
             "name": self.pipeline_name,
-            "pipeline-id": self.pipeline_id,
             "use-snapshot": self.use_snapshots,
             "start-time": self.pipeline_start_time,
             "is-completed": self.is_completed,
