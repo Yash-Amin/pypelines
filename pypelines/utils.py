@@ -1,7 +1,14 @@
 """Util functions."""
-
-
+from hashlib import sha256
+from pymongo import MongoClient
 from typing import Any, Dict, List
+from pymongo.collection import Collection
+
+from pypelines.config import (
+    DB_NAME,
+    DB_CONNECTION_STRING,
+    DB_SNAPSHOT_COLLECTION_NAME,
+)
 
 
 def string_to_bool(val):
@@ -75,3 +82,13 @@ def get_parameters_from_string_arguments(raw_parameters: List[str]) -> Dict[str,
         parameters[key] = replace_parameters_from_anything(value, parameters)
 
     return parameters
+
+
+def get_snapshots_collection() -> Collection:
+    _client = MongoClient(DB_CONNECTION_STRING)
+    return _client[DB_NAME][DB_SNAPSHOT_COLLECTION_NAME]
+
+
+def sha256_hash(s: str) -> str:
+    """Returns SHA256 of given string"""
+    return sha256(s.encode()).hexdigest()
